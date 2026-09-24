@@ -1,0 +1,46 @@
+name: Core platforms (not GUI or physical devices)
+
+on:
+  pull_request:
+  push:
+    branches: [qa/approved-cats-and-test-evidence]
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    name: Core / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15, macos-15-intel]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Record actual host (not a physical-device test)
+        run: |
+          mkdir -p evidence
+          python -c 'import json,platform,sys; from pathlib import Path; Path("evidence/host.json").write_text(json.dumps({"os":platform.platform(),"machine":platform.machine(),"python":sys.version,"scope":"core-only; no GUI, Windows 11 physical device, GPU or approved-art verification"},ensure_ascii=False,indent=2),encoding="utf-8")'
+      - name: Test movement, settings and bounded pack inputs
+        run: |
+          set -o pipefail
+          python -m unittest discover -s tests -p test_platform_core.py -v 2>&1 | tee evidence/core-tests.txt
+          python -m compileall -q neko tests/test_platform_core.py
+      - name: Keep real logs even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: core-${{ matrix.os }}
+          path: evidence/
+          retention-days: 14
+          if-no-files-found: warn
