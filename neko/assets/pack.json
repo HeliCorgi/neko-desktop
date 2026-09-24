@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "name": "こむぎ",
+  "author": "neko-desktop contributors",
+  "license": "MIT",
+  "atlas": "atlas.png",
+  "cell": 256,
+  "columns": 4,
+  "rows": 3,
+  "animations": {
+    "idle": {"frames": [0, 1], "fps": 1},
+    "walk": {"frames": [2, 3, 4, 5], "fps": 6},
+    "sleep": {"frames": [6, 7], "fps": 2},
+    "pet": {"frames": [8, 9], "fps": 3},
+    "eat": {"frames": [10, 11], "fps": 4}
+  }
+}
